@@ -1,0 +1,20 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: tokensense-db
+    environment:
+      POSTGRES_USER: tokensense
+      POSTGRES_PASSWORD: tokensense
+      POSTGRES_DB: tokensense
+    ports:
+      - "5432:5432"
+    volumes:
+      - tokensense_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tokensense -d tokensense"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  tokensense_pgdata:

@@ -1,0 +1,6 @@
+{
+  "enabledMcpjsonServers": [
+    "tokensense"
+  ],
+  "enableAllProjectMcpServers": true
+}

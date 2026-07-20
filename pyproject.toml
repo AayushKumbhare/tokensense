@@ -1,0 +1,26 @@
+[project]
+name = "tokensense"
+version = "0.1.0"
+description = "Model-agnostic, project-scoped memory middleware for LLM workflows"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "litellm>=1.40.0",
+    "sqlalchemy>=2.0",
+    "psycopg2-binary>=2.9",
+    "pgvector>=0.2.5",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+server = ["fastapi>=0.110", "uvicorn>=0.29", "httpx>=0.27", "mcp>=1.2"]
+
+[project.scripts]
+tokensense = "tokensense.server.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tokensense"]

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tokensense": {
+      "command": "/Users/aayushkumbhare/Desktop/tokensense/.venv/bin/tokensense",
+      "args": ["serve", "--mcp"],
+      "env": {
+        "TOKENSENSE_DB_URL": "postgresql://tokensense:tokensense@localhost:5432/tokensense"
+      }
+    }
+  }
+}
