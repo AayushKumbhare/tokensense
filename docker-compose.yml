@@ -9,7 +9,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${TOKENSENSE_DB_USER:-tokensense}
-      POSTGRES_PASSWORD: ${TOKENSENSE_DB_PASSWORD:-tokensense}
+      POSTGRES_PASSWORD: ${TOKENSENSE_DB_PASSWORD:?set TOKENSENSE_DB_PASSWORD in .env (see .env.example)}
       POSTGRES_DB: ${TOKENSENSE_DB_NAME:-tokensense}
     ports:
       - "${TOKENSENSE_DB_PORT:-5432}:5432"
@@ -30,7 +30,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      TOKENSENSE_DB_URL: postgresql://${TOKENSENSE_DB_USER:-tokensense}:${TOKENSENSE_DB_PASSWORD:-tokensense}@db:5432/${TOKENSENSE_DB_NAME:-tokensense}
+      TOKENSENSE_DB_URL: postgresql://${TOKENSENSE_DB_USER:-tokensense}:${TOKENSENSE_DB_PASSWORD:?set TOKENSENSE_DB_PASSWORD in .env (see .env.example)}@db:5432/${TOKENSENSE_DB_NAME:-tokensense}
     ports:
       - "${TOKENSENSE_PORT:-8317}:8317"
 

@@ -23,8 +23,10 @@ from tokensense.memory.store import EMBEDDING_DIM
 
 import tokensense.project as project_module
 
+_default_password = os.environ.get("TOKENSENSE_DB_PASSWORD", "tokensense")
 DB_URL = os.environ.get(
-    "TOKENSENSE_TEST_DB_URL", "postgresql://tokensense:tokensense@localhost:5432/tokensense"
+    "TOKENSENSE_TEST_DB_URL",
+    f"postgresql://tokensense:{_default_password}@localhost:5432/tokensense",
 )
 
 

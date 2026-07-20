@@ -29,7 +29,7 @@ Tracks remaining work against `tokensense_project.md`. Update as items land or s
 
 ### 1. Local dev environment & integration testing
 - [x] Stand up Postgres + pgvector (Docker) for local dev — `docker-compose.yml` (pgvector/pgvector:pg17,
-      `postgresql://tokensense:tokensense@localhost:5432/tokensense`); verified live: schema auto-creation,
+      `postgresql://tokensense:<password>@localhost:5432/tokensense`); verified live: schema auto-creation,
       HNSW indexes, project-isolated top-k retrieval, cascade delete
 - [x] End-to-end smoke test: create project → chat → `end_session()` → confirm the memory chunk is retrievable in a second session — `tests/test_live_integration.py` (real Store/Retriever/SlidingWindow against Docker Postgres, deterministic fakes at the network boundary; auto-skips when the DB is down; `TOKENSENSE_TEST_DB_URL` overrides the URL for CI)
 - [x] Point at a local Ollama instance for summarization testing — `tests/test_live_ollama.py` (opt-in via

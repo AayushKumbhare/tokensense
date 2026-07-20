@@ -7,3 +7,5 @@ dist/
 build/
 .env
 .pytest_cache/
+.mcp.json
+.claude/settings.json

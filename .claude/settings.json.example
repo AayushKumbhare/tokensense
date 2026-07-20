@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "TOKENSENSE_DB_URL=<your-db-url> uvx --from 'tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense' tokensense ingest-transcript"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "TOKENSENSE_DB_URL=<your-db-url> uvx --from 'tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense' tokensense ingest-transcript"
+          }
+        ]
+      }
+    ]
+  }
+}

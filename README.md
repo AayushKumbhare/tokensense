@@ -68,13 +68,15 @@ itself on first connect.
   pgvector locally:
 
   ```bash
+  cp .env.example .env   # then edit TOKENSENSE_DB_PASSWORD to a real value
   docker compose up -d --wait
   ```
 
-  Exposes `localhost:5432` with a persistent volume; default URL is
-  `postgresql://tokensense:tokensense@localhost:5432/tokensense`. Override
-  `TOKENSENSE_DB_USER` / `TOKENSENSE_DB_PASSWORD` / `TOKENSENSE_DB_NAME` /
-  `TOKENSENSE_DB_PORT` if you don't want the defaults.
+  Exposes `localhost:5432` with a persistent volume; URL is
+  `postgresql://tokensense:$TOKENSENSE_DB_PASSWORD@localhost:5432/tokensense` (user/db
+  name default to `tokensense`, password is required — compose refuses to start without
+  it). Override `TOKENSENSE_DB_USER` / `TOKENSENSE_DB_NAME` / `TOKENSENSE_DB_PORT` in
+  `.env` too if you don't want those defaults.
 
 ## Install (editable, for development on TokenSense itself)
 
