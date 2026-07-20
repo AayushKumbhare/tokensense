@@ -103,8 +103,16 @@ Reframed 2026-07-18: the MCP-on-Claude-Code memory layer is the product; SDK/pro
 
 ### 6. Packaging & polish
 - [ ] CO₂ methodology write-up (cite sources; net out the summarization step's own token/compute cost)
-- [ ] PyPI packaging metadata (license, classifiers, author info)
+- [x] PyPI packaging metadata (license, classifiers, author info) — `pyproject.toml` +
+      `LICENSE` (MIT); not yet published to PyPI, install is via `uvx`/`pip` from GitHub
+      (`github.com/AayushKumbhare/tokensense`)
 - [ ] CI: lint + pytest on push
+- [x] Production Dockerfile (multi-stage, non-root) + `docker-compose.yml` `server`
+      profile for a fully containerized self-host; hardened compose (restart policy,
+      configurable creds)
+- [x] Cloud-hosted Postgres documented as the recommended default (Neon, free tier,
+      native pgvector/HNSW) so other users skip local Docker entirely — see README
+      "Database"; self-hosted Docker Postgres kept as the alternative
 
 ## Phase 2 (deferred — not started, not blocking Phase 1)
 

@@ -6,37 +6,89 @@ instead of re-explaining prior work or stuffing full history into the context wi
 
 See `tokensense_project.md` for the full design doc.
 
-## Install (editable, for development)
+## Quickstart (using TokenSense in your own project)
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+Three steps, no local Postgres or `pip install` required:
+
+**1. Get a free hosted Postgres with pgvector.** [Neon](https://neon.tech) works out of
+the box — sign up, create a project, and copy the connection string from the dashboard
+(looks like `postgresql://user:pass@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require`).
+TokenSense creates its own extension/tables/indexes on first connect, so an empty
+database is all it needs. (Self-hosting Postgres instead? See [Database](#database).)
+
+**2. Install [`uv`](https://docs.astral.sh/uv/getting-started/installation/)** if you
+don't have it (`brew install uv`, or `curl -LsSf https://astral.sh/uv/install.sh | sh`).
+`uvx` runs TokenSense straight from GitHub — no separate install step, no PATH setup.
+
+**3. Add `.mcp.json` to your project** (Claude Code, Cursor, or any MCP-compatible tool):
+
+```json
+{
+  "mcpServers": {
+    "tokensense": {
+      "command": "uvx",
+      "args": ["--from", "tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense", "tokensense", "serve", "--mcp"],
+      "env": { "TOKENSENSE_DB_URL": "<your Neon connection string>" }
+    }
+  }
+}
 ```
 
-Requires a Postgres instance with the `pgvector` extension available (the client will
-create the extension and tables on first connect). For local dev, the included
-compose file runs one:
+That's it — restart your MCP client and `get_project_context` / `save_context` /
+`stats` are available. Project memory is scoped by `TOKENSENSE_PROJECT` (or inferred
+from the git repo/folder name), so multiple projects can safely share one database.
+For automatic session capture instead of relying on the agent to call `end_session`,
+also add the hooks in [Session capture](#session-capture-claude-code-hooks).
 
-```bash
-docker compose up -d --wait
-```
-
-This exposes Postgres 17 + pgvector on `localhost:5432` with a persistent volume;
-the connection URL is `postgresql://tokensense:tokensense@localhost:5432/tokensense`.
-
-Summarization and embeddings default to local Ollama models (no conversation content
-leaves your machine), so the default configuration also needs:
+Summarization/embeddings default to local Ollama models (no conversation content
+leaves your machine):
 
 ```bash
 ollama pull qwen2.5:3b        # summarizer (see docs/decisions.md #5)
 ollama pull nomic-embed-text  # embeddings, 768-dim (see docs/decisions.md #4)
 ```
 
-API models remain available via `summarization_model=` / `embedding_model=` (or the
-`TOKENSENSE_SUMMARIZATION_MODEL` / `TOKENSENSE_EMBEDDING_MODEL` env vars for the
-server). Changing the *embedding* model invalidates stored vectors — see the
+Prefer an API model instead of running Ollama? Set `TOKENSENSE_SUMMARIZATION_MODEL` /
+`TOKENSENSE_EMBEDDING_MODEL` in the same `env` block (any [LiteLLM](https://docs.litellm.ai/docs/providers)
+model string). Changing the *embedding* model invalidates stored vectors — see the
 re-migration note in `docs/decisions.md`.
+
+## Database
+
+TokenSense just needs a `TOKENSENSE_DB_URL` pointing at any Postgres with the
+`pgvector` extension available — it creates the extension, tables, and HNSW indexes
+itself on first connect.
+
+- **Hosted (recommended for most users):** [Neon](https://neon.tech) or
+  [Supabase](https://supabase.com) both support `pgvector` on their free tiers and give
+  you a connection string with no local setup. Neon's free tier doesn't auto-pause on
+  inactivity the way Supabase's does, so it's the better fit for an MCP server that
+  connects sporadically between coding sessions.
+- **Self-hosted (Docker):** the included `docker-compose.yml` runs Postgres 17 +
+  pgvector locally:
+
+  ```bash
+  docker compose up -d --wait
+  ```
+
+  Exposes `localhost:5432` with a persistent volume; default URL is
+  `postgresql://tokensense:tokensense@localhost:5432/tokensense`. Override
+  `TOKENSENSE_DB_USER` / `TOKENSENSE_DB_PASSWORD` / `TOKENSENSE_DB_NAME` /
+  `TOKENSENSE_DB_PORT` if you don't want the defaults.
+
+## Install (editable, for development on TokenSense itself)
+
+Only needed if you're changing TokenSense's own code — for using it as a memory
+server in another project, see the [Quickstart](#quickstart-using-tokensense-in-your-own-project) above instead.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev,server]"
+```
+
+Needs a Postgres instance with `pgvector` (see [Database](#database)) and, by default,
+local Ollama models — same two `ollama pull` commands as the Quickstart above.
 
 ## Quickstart
 
@@ -64,14 +116,24 @@ prompt caching — they're served as retrieved chunks instead (`docs/decisions.m
 ## Zero-code server (proxy + MCP)
 
 The SDK above requires writing code against `TokenSenseClient`. The server exposes the
-same core engine through two zero-code transports (install with `pip install -e ".[server]"`).
+same core engine through two zero-code transports. Run it via `uvx` (see Quickstart),
+a local `pip install -e ".[server]"`, or as a container:
+
+```bash
+docker build -t tokensense .
+docker run --rm -p 8317:8317 -e TOKENSENSE_DB_URL=<your-db-url> tokensense serve
+# or MCP over stdio: docker run -i --rm -e TOKENSENSE_DB_URL=<your-db-url> tokensense serve --mcp
+```
+
+`docker compose --profile server up -d --wait` builds and runs the server alongside the
+self-hosted Postgres from [Database](#database) in one command.
 
 ### Proxy transport
 
 Any tool with a `base_url` override gets memory with no code changes:
 
 ```bash
-export TOKENSENSE_DB_URL=postgresql://localhost/tokensense
+export TOKENSENSE_DB_URL=<your-db-url>
 tokensense serve            # listens on localhost:8317
 ```
 
@@ -99,7 +161,10 @@ For Claude Code, Cursor, and similar tools — memory is exposed as callable too
 without waiting for session end), `end_session`, `switch_project`, and `stats`
 (token/CO₂ savings: retrieved-summary tokens vs. the raw session tokens they
 replaced, per `docs/decisions.md` #7; scoped to the current server process, i.e.
-one Claude Code session). Add to `.mcp.json` in your project directory (Claude Code):
+one Claude Code session). Add to `.mcp.json` in your project directory (Claude Code) —
+see the [Quickstart](#quickstart-using-tokensense-in-your-own-project) for the
+`uvx`-based config. If you installed TokenSense yourself instead (`pip install`/`pipx
+install`, so `tokensense` is already on `PATH`), the config simplifies to:
 
 ```json
 {
@@ -107,7 +172,7 @@ one Claude Code session). Add to `.mcp.json` in your project directory (Claude C
     "tokensense": {
       "command": "tokensense",
       "args": ["serve", "--mcp"],
-      "env": { "TOKENSENSE_DB_URL": "postgresql://localhost/tokensense" }
+      "env": { "TOKENSENSE_DB_URL": "<your-db-url>" }
     }
   }
 }
@@ -136,7 +201,7 @@ session before compaction rewrites it:
         "hooks": [
           {
             "type": "command",
-            "command": "TOKENSENSE_DB_URL=postgresql://tokensense:tokensense@localhost:5432/tokensense tokensense ingest-transcript"
+            "command": "TOKENSENSE_DB_URL=<your-db-url> uvx --from 'tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense' tokensense ingest-transcript"
           }
         ]
       }
@@ -146,7 +211,7 @@ session before compaction rewrites it:
         "hooks": [
           {
             "type": "command",
-            "command": "TOKENSENSE_DB_URL=postgresql://tokensense:tokensense@localhost:5432/tokensense tokensense ingest-transcript"
+            "command": "TOKENSENSE_DB_URL=<your-db-url> uvx --from 'tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense' tokensense ingest-transcript"
           }
         ]
       }
@@ -154,6 +219,10 @@ session before compaction rewrites it:
   }
 }
 ```
+
+(If `tokensense` is already on `PATH` via `pip`/`pipx install`, drop the `uvx --from ...`
+wrapper and call `tokensense ingest-transcript` directly — same as the CLI everywhere
+else in this doc.)
 
 Ingestion is idempotent per Claude Code session (re-firing either hook, or re-ingesting a
 resumed session's grown transcript, updates that session's memory in place — so a

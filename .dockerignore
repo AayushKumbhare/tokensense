@@ -1,0 +1,15 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.git/
+.pytest_cache/
+.env
+tests/
+benchmarks/
+docs/
+tokensense_project.md
+TASKS.md
