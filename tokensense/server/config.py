@@ -26,6 +26,7 @@ class ServerConfig:
     window_size: int = 5
     top_k: int = 5
     idle_timeout_seconds: float = 1800.0
+    ensure_schema: bool = True
     upstreams: dict[str, str] = field(default_factory=lambda: dict(DEFAULT_UPSTREAMS))
 
     @classmethod
@@ -44,4 +45,5 @@ class ServerConfig:
             window_size=int(env.get("TOKENSENSE_WINDOW_SIZE", 5)),
             top_k=int(env.get("TOKENSENSE_TOP_K", 5)),
             idle_timeout_seconds=float(env.get("TOKENSENSE_IDLE_TIMEOUT", 1800)),
+            ensure_schema=env.get("TOKENSENSE_ENSURE_SCHEMA", "1") not in ("0", "false", "False"),
         )

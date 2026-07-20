@@ -78,6 +78,29 @@ itself on first connect.
   it). Override `TOKENSENSE_DB_USER` / `TOKENSENSE_DB_NAME` / `TOKENSENSE_DB_PORT` in
   `.env` too if you don't want those defaults.
 
+### Sharing your database with a collaborator
+
+If you want a friend/teammate to use your instance without them signing up for their
+own hosted Postgres, don't just hand them your `TOKENSENSE_DB_URL` — TokenSense's
+project isolation is enforced by the app, not the database, so whoever holds that
+connection string can read and write *every* project's memory, not just their own.
+
+Instead, give each outside user their own database, provisioned from your existing
+Postgres server (one Neon project can hold many databases):
+
+```bash
+python scripts/create_user_database.py <your-owner-db-url> <friend-name>
+```
+
+This creates a new database + a Postgres role that *owns* it (and only it), and prints
+a connection string scoped to that database alone. Their role has zero grants on your
+main database or anyone else's — verified with a live connection attempt (`permission
+denied`), not just assumed. Give them that connection string; they drop it straight
+into their own `.mcp.json`'s `TOKENSENSE_DB_URL` (see [Quickstart](#quickstart-using-tokensense-in-your-own-project))
+and everything else works exactly like a normal install — since their role owns their
+database, schema bootstrap (`CREATE EXTENSION`, tables, indexes) runs for them
+automatically on first connect, same as it did for you.
+
 ## Install (editable, for development on TokenSense itself)
 
 Only needed if you're changing TokenSense's own code — for using it as a memory

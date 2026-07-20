@@ -210,11 +210,19 @@ class Store:
     """High-level read/write operations. Owns the engine and session factory so
     callers never touch SQLAlchemy sessions directly."""
 
-    def __init__(self, db_url: str):
+    def __init__(self, db_url: str, ensure_schema: bool = True):
+        """`ensure_schema=False` skips CREATE EXTENSION / CREATE TABLE — for
+        restricted roles (see scripts/create_restricted_role.py) that only
+        have DML grants on already-provisioned tables and would get a
+        permission error attempting DDL, even idempotent DDL against objects
+        that already exist (Postgres checks CREATE privilege before checking
+        IF NOT EXISTS)."""
         self.engine = create_engine(db_url)
+        if ensure_schema:
+            with self.engine.connect() as conn:
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+                conn.commit()
         with self.engine.connect() as conn:
-            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-            conn.commit()
             existing_dim = conn.execute(
                 text(
                     "SELECT atttypmod FROM pg_attribute"
@@ -228,7 +236,8 @@ class Store:
                 "no in-place migration: back up what you need, drop the tables (projects, "
                 "sub_conversations, memory_chunks, documents, document_chunks), and re-embed."
             )
-        Base.metadata.create_all(self.engine)
+        if ensure_schema:
+            Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine, expire_on_commit=False)
 
     # -- projects / sub-conversations -------------------------------------------------

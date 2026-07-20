@@ -28,7 +28,7 @@ from .sessions import ServerSession
 class ServerEngine:
     def __init__(self, config: ServerConfig, *, store: Store | None = None):
         self.config = config
-        self.store = store if store is not None else Store(config.db_url)
+        self.store = store if store is not None else Store(config.db_url, ensure_schema=config.ensure_schema)
         self.embedder = Embedder(model=config.embedding_model)
         self.retriever = Retriever(self.store, self.embedder, top_k=config.top_k)
         self.tracker = Tracker()
