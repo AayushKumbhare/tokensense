@@ -21,8 +21,8 @@ class ServerConfig:
     port: int = DEFAULT_PORT
     default_provider: str = "anthropic"
     default_project: str = DEFAULT_PROJECT_NAME
-    summarization_model: str = "qwen2.5:3b"
-    embedding_model: str = "ollama/nomic-embed-text"
+    summarization_model: str = "gpt-4o-mini"
+    embedding_model: str = "text-embedding-3-small"
     window_size: int = 5
     top_k: int = 5
     idle_timeout_seconds: float = 1800.0
@@ -40,8 +40,8 @@ class ServerConfig:
             port=int(env.get("TOKENSENSE_PORT", DEFAULT_PORT)),
             default_provider=env.get("TOKENSENSE_DEFAULT_PROVIDER", "anthropic"),
             default_project=env.get("TOKENSENSE_DEFAULT_PROJECT", DEFAULT_PROJECT_NAME),
-            summarization_model=env.get("TOKENSENSE_SUMMARIZATION_MODEL", "qwen2.5:3b"),
-            embedding_model=env.get("TOKENSENSE_EMBEDDING_MODEL", "ollama/nomic-embed-text"),
+            summarization_model=env.get("TOKENSENSE_SUMMARIZATION_MODEL", "gpt-4o-mini"),
+            embedding_model=env.get("TOKENSENSE_EMBEDDING_MODEL", "text-embedding-3-small"),
             window_size=int(env.get("TOKENSENSE_WINDOW_SIZE", 5)),
             top_k=int(env.get("TOKENSENSE_TOP_K", 5)),
             idle_timeout_seconds=float(env.get("TOKENSENSE_IDLE_TIMEOUT", 1800)),

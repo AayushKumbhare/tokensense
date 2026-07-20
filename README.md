@@ -28,7 +28,10 @@ don't have it (`brew install uv`, or `curl -LsSf https://astral.sh/uv/install.sh
     "tokensense": {
       "command": "uvx",
       "args": ["--from", "tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense", "tokensense", "serve", "--mcp"],
-      "env": { "TOKENSENSE_DB_URL": "<your Neon connection string>" }
+      "env": {
+        "TOKENSENSE_DB_URL": "<your Neon connection string>",
+        "OPENAI_API_KEY": "<your OpenAI key>"
+      }
     }
   }
 }
@@ -40,17 +43,27 @@ from the git repo/folder name), so multiple projects can safely share one databa
 For automatic session capture instead of relying on the agent to call `end_session`,
 also add the hooks in [Session capture](#session-capture-claude-code-hooks).
 
-Summarization/embeddings default to local Ollama models (no conversation content
-leaves your machine):
+Summarization/embeddings default to OpenAI (`gpt-4o-mini` + `text-embedding-3-small`,
+see `docs/decisions.md` #8) so the API key above is the only thing you need — no
+separate download or local model server. Prefer to run everything locally instead (no
+conversation content leaves your machine, no API key, no per-call cost)? Set both in
+the same `env` block:
 
 ```bash
 ollama pull qwen2.5:3b        # summarizer (see docs/decisions.md #5)
 ollama pull nomic-embed-text  # embeddings, 768-dim (see docs/decisions.md #4)
 ```
 
-Prefer an API model instead of running Ollama? Set `TOKENSENSE_SUMMARIZATION_MODEL` /
-`TOKENSENSE_EMBEDDING_MODEL` in the same `env` block (any [LiteLLM](https://docs.litellm.ai/docs/providers)
-model string). Changing the *embedding* model invalidates stored vectors — see the
+```json
+"env": {
+  "TOKENSENSE_DB_URL": "<your Neon connection string>",
+  "TOKENSENSE_SUMMARIZATION_MODEL": "qwen2.5:3b",
+  "TOKENSENSE_EMBEDDING_MODEL": "ollama/nomic-embed-text"
+}
+```
+
+Any [LiteLLM](https://docs.litellm.ai/docs/providers) model string works for either
+variable. Changing the *embedding* model invalidates stored vectors — see the
 re-migration note in `docs/decisions.md`.
 
 ## Database
@@ -113,7 +126,9 @@ pip install -e ".[dev,server]"
 ```
 
 Needs a Postgres instance with `pgvector` (see [Database](#database)) and, by default,
-local Ollama models — same two `ollama pull` commands as the Quickstart above.
+an `OPENAI_API_KEY` in the environment — or the two `ollama pull` commands from the
+Quickstart above if you'd rather point `TOKENSENSE_SUMMARIZATION_MODEL` /
+`TOKENSENSE_EMBEDDING_MODEL` at local models instead.
 
 ## Quickstart
 

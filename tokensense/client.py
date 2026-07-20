@@ -33,8 +33,8 @@ class TokenSenseClient:
         api_key: str | None,
         db_url: str,
         model: str | None = None,
-        summarization_model: str = "qwen2.5:3b",
-        embedding_model: str = "ollama/nomic-embed-text",
+        summarization_model: str = "gpt-4o-mini",
+        embedding_model: str = "text-embedding-3-small",
         window_size: int = 5,
         top_k: int = 5,
     ):

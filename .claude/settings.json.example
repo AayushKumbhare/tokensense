@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "TOKENSENSE_DB_URL=<your-db-url> uvx --from 'tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense' tokensense ingest-transcript"
+            "command": "TOKENSENSE_DB_URL=<your-db-url> OPENAI_API_KEY=<your-openai-key> uvx --from 'tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense' tokensense ingest-transcript"
           }
         ]
       }
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "TOKENSENSE_DB_URL=<your-db-url> uvx --from 'tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense' tokensense ingest-transcript"
+            "command": "TOKENSENSE_DB_URL=<your-db-url> OPENAI_API_KEY=<your-openai-key> uvx --from 'tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense' tokensense ingest-transcript"
           }
         ]
       }

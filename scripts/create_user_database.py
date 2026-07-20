@@ -89,8 +89,11 @@ def main() -> None:
     print(f"  {friend_url.render_as_string(hide_password=False)}")
     print()
     print(
-        "They put that in their own .mcp.json as TOKENSENSE_DB_URL — no other config needed, "
-        "their role owns this database so schema bootstrap works normally for them."
+        "They put that in their own .mcp.json as TOKENSENSE_DB_URL, plus their own "
+        "OPENAI_API_KEY (default summarizer/embedder — see docs/decisions.md #8; set "
+        "TOKENSENSE_SUMMARIZATION_MODEL/TOKENSENSE_EMBEDDING_MODEL instead for local "
+        "Ollama). No other config needed — their role owns this database, so schema "
+        "bootstrap works normally for them."
     )
 
 

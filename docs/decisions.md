@@ -148,3 +148,24 @@ the baseline is measured, not modeled.
 process — one Claude Code session on the MCP transport (one subprocess per
 session). Cumulative cross-session accounting would need persisted counters;
 deferred until the pitch needs a lifetime number rather than a per-session one.
+
+## 8. Default summarizer/embedder: OpenAI, not Ollama (reverses #4/#5's default)
+
+**Decision:** `ServerConfig` and `TokenSenseClient` now default
+`summarization_model` to `gpt-4o-mini` and `embedding_model` to
+`text-embedding-3-small`, not the local Ollama models decisions #4 and #5
+picked as defaults. Ollama remains fully supported and unchanged — set both
+`TOKENSENSE_SUMMARIZATION_MODEL=qwen2.5:3b` and
+`TOKENSENSE_EMBEDDING_MODEL=ollama/nomic-embed-text` to opt back in.
+
+**Why:** #4/#5 optimized for a single local, cost-free, privacy-preserving
+install (the project owner's own machine). Once outside collaborators started
+using TokenSense against a shared or per-user hosted database (see
+`scripts/create_user_database.py`), the local-first default became a setup
+tax on every new user: install Ollama, pull ~4GB across two models, before
+anything works. One OpenAI key — which most Claude Code users already have
+some equivalent of — covers both summarization and embeddings, so the
+collaborator's entire setup is `.mcp.json` plus that key. This is explicitly
+a default flip, not a removal: users who want the original privacy/cost
+posture keep it via the two env vars above, and `LOCAL_SUMMARIZER_MODELS`
+routing in `client.py` is unchanged.

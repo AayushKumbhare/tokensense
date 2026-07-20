@@ -4,7 +4,8 @@
       "command": "uvx",
       "args": ["--from", "tokensense[server] @ git+https://github.com/AayushKumbhare/tokensense", "tokensense", "serve", "--mcp"],
       "env": {
-        "TOKENSENSE_DB_URL": "<your-db-url>"
+        "TOKENSENSE_DB_URL": "<your-db-url>",
+        "OPENAI_API_KEY": "<your-openai-key>"
       }
     }
   }

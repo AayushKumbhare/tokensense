@@ -119,6 +119,13 @@ Reframed 2026-07-18: the MCP-on-Claude-Code memory layer is the product; SDK/pro
       `permission denied` against the owner's main database). `Store(ensure_schema=)` /
       `TOKENSENSE_ENSURE_SCHEMA` added as general infra but unused by this flow since an
       owning role can bootstrap its own schema normally
+- [x] Default summarizer/embedder switched to OpenAI (`gpt-4o-mini` +
+      `text-embedding-3-small`) — reverses decisions #4/#5's Ollama default so a new
+      collaborator's setup is `.mcp.json` + one API key, no Ollama install/download.
+      Ollama remains fully supported opt-in via the two model env vars
+      (`docs/decisions.md` #8). This machine's own `.mcp.json`/hooks (both repos) were
+      repinned to the old Ollama models explicitly so the owner's existing local/free
+      setup keeps working unchanged
 
 ## Phase 2 (deferred — not started, not blocking Phase 1)
 
